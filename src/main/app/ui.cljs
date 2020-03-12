@@ -53,7 +53,7 @@
 
 (def ui-transaction-list-item-payee (comp/factory TransactionListItemPayee))
 
-(defsc Transaction [this {:transaction/keys [id date payee ledger description amount] :as props}]
+(defsc TransactionListItem [this {:transaction/keys [id date payee ledger description amount] :as props}]
   {:query [:transaction/id :transaction/date :transaction/payee :transaction/ledger :transaction/description :transaction/amount]
    :ident (fn [] [:transaction/id (:transaction/id props)])
    :initial-state (fn [{:keys [id date payee ledger description amount] :as params}]
@@ -71,24 +71,51 @@
      (dom/td amount)
      (dom/td "something")))
 
-(def ui-transaction (comp/factory Transaction {:keyfn :transaction/id}))
+(def ui-transaction (comp/factory TransactionListItem {:keyfn :transaction/id}))
 
-;; (defsc NewTransactionRow [this ????])
+(defsc NewTransactionRow [this {:new-transaction/keys [description amount] :as props}]
+  {:query [:new-transaction/description :new-transaction/amount]
+   :ident (fn [this props] [:component/id ::new-transaction])
+   :initial-state (fn [this props]
+                    #_(cljs.pprint/pprint props)
+                    {:new-transaction/description "" :new-transaction/amount ""})}
+  (let [_ (cljs.pprint/pprint {:props props})]
+   (dom/tr
+    (dom/td (dom/input {:type :text
+                        :size 2
+                        :value "1"})
+            (dom/span "/")
+            (dom/input {:type :text
+                        :size 2
+                        :value "1"})
+            (dom/span "/")
+            (dom/input {:type :text
+                        :size 4
+                        :value "2002"}))
+    (dom/td "new payee")
+    (dom/td "new ledger")
+    (dom/td (dom/input {:type :text
+                        :value description}))
+    (dom/td (dom/input {:type :text
+                        :value amount}))
+    (dom/td (dom/button "what")))))
 
-;; (def ui-transaction (comp/factory))
+(def ui-new-transaction-row (comp/factory NewTransactionRow))
 
-(defsc TransactionList [this {:transaction-list/keys [transactions] :as props}]
-  {:query [{:transaction-list/transactions (comp/get-query Transaction)}]
+(defsc TransactionList [this {:transaction-list/keys [transactions new-transaction] :as props}]
+  {:query [:transaction-list/new-transaction
+           {:transaction-list/transactions (comp/get-query TransactionListItem)}]
    :ident (fn [this props] [:component/id ::transaction-list])
    :initial-state (fn [this props]
-                    {:transaction-list/transactions [(comp/get-initial-state Transaction {:id 1
+                    {:transaction-list/transactions [(comp/get-initial-state TransactionListItem {:id 1
                                                                                           :date "2020"
                                                                                           ;; :payee "test payee"
                                                                                           :payee {:id 1
                                                                                                   :name "test payee"}
                                                                                           :ledger "test ledger"
                                                                                           :description "soem descrip"
-                                                                                          :amount "1111.11"})]})}
+                                                                                                  :amount "1111.11"})]
+                     :transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
   (dom/div
    (dom/table :.table
               (dom/thead
@@ -100,6 +127,7 @@
                 (dom/th "amount")
                 (dom/th "controls")))
               (dom/tbody
+               (ui-new-transaction-row new-transaction)
                (map ui-transaction transactions)))))
 
 (def ui-transaction-list (comp/factory TransactionList))
