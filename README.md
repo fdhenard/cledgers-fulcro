@@ -8,7 +8,11 @@
 
 ## local startup
 
-- `$ npx shadow-cljs server`
+- start shadow-cljs server
+
+        $ cd <repos>/cledgers-fulcro
+        $ npx shadow-cljs server
+
 - navigate to [localhost:9630](http://localhost:9630)
 - start watch
 - navigate another tab to [localhost:8000](http://localhost:8000)
