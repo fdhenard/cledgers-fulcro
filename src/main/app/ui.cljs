@@ -42,19 +42,30 @@
 
 #_(def ui-person-list (comp/factory PersonList))
 
+(defsc TransactionListItemPayee
+  [this {:payee/keys [id name] :as props}]
+  {:query [:payee/id :payee/name]
+   :ident (fn [] [:payee/id (:payee/id props)])
+   :initial-state (fn [{:keys [id name] :as params}]
+                    {:payee/id id
+                     :payee/name name})}
+  name)
+
+(def ui-transaction-list-item-payee (comp/factory TransactionListItemPayee))
+
 (defsc Transaction [this {:transaction/keys [id date payee ledger description amount] :as props}]
   {:query [:transaction/id :transaction/date :transaction/payee :transaction/ledger :transaction/description :transaction/amount]
    :ident (fn [] [:transaction/id (:transaction/id props)])
    :initial-state (fn [{:keys [id date payee ledger description amount] :as params}]
                     {:transaction/id id
                      :transaction/date date
-                     :transaction/payee payee
+                     :transaction/payee (comp/get-initial-state TransactionListItemPayee payee)
                      :transaction/ledger ledger
                      :transaction/description description
                      :transaction/amount amount})}
   (dom/tr
      (dom/td date)
-     (dom/td payee)
+     (dom/td (ui-transaction-list-item-payee payee))
      (dom/td ledger)
      (dom/td description)
      (dom/td amount)
@@ -62,13 +73,19 @@
 
 (def ui-transaction (comp/factory Transaction {:keyfn :transaction/id}))
 
+;; (defsc NewTransactionRow [this ????])
+
+;; (def ui-transaction (comp/factory))
+
 (defsc TransactionList [this {:transaction-list/keys [transactions] :as props}]
   {:query [{:transaction-list/transactions (comp/get-query Transaction)}]
    :ident (fn [this props] [:component/id ::transaction-list])
    :initial-state (fn [this props]
                     {:transaction-list/transactions [(comp/get-initial-state Transaction {:id 1
                                                                                           :date "2020"
-                                                                                          :payee "test payee"
+                                                                                          ;; :payee "test payee"
+                                                                                          :payee {:id 1
+                                                                                                  :name "test payee"}
                                                                                           :ledger "test ledger"
                                                                                           :description "soem descrip"
                                                                                           :amount "1111.11"})]})}
