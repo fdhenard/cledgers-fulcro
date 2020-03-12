@@ -73,13 +73,13 @@
 
 (def ui-transaction (comp/factory TransactionListItem {:keyfn :transaction/id}))
 
-(defsc NewTransactionRow [this {:new-transaction/keys [description amount] :as props}]
-  {:query [:new-transaction/description :new-transaction/amount]
-   :ident (fn [this props] [:component/id ::new-transaction])
-   :initial-state (fn [this props]
+(defsc NewTransactionRow [this {:new-transaction/keys [id description amount] :as props}]
+  {:query [:new-transaction/id :new-transaction/description :new-transaction/amount]
+   :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
+   :initial-state (fn [params]
                     #_(cljs.pprint/pprint props)
-                    {:new-transaction/description "" :new-transaction/amount ""})}
-  (let [_ (cljs.pprint/pprint {:props props})]
+                    {:new-transaction/id ::new-transaction :new-transaction/description "" :new-transaction/amount ""})}
+  (let [#_ (cljs.pprint/pprint {:props-in-new-trans-row props})]
    (dom/tr
     (dom/td (dom/input {:type :text
                         :size 2
@@ -103,7 +103,7 @@
 (def ui-new-transaction-row (comp/factory NewTransactionRow))
 
 (defsc TransactionList [this {:transaction-list/keys [transactions new-transaction] :as props}]
-  {:query [:transaction-list/new-transaction
+  {:query [{:transaction-list/new-transaction (comp/get-query NewTransactionRow)}
            {:transaction-list/transactions (comp/get-query TransactionListItem)}]
    :ident (fn [this props] [:component/id ::transaction-list])
    :initial-state (fn [this props]
@@ -116,19 +116,20 @@
                                                                                           :description "soem descrip"
                                                                                                   :amount "1111.11"})]
                      :transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
-  (dom/div
-   (dom/table :.table
-              (dom/thead
-               (dom/tr
-                (dom/th "date")
-                (dom/th "payee")
-                (dom/th "ledger")
-                (dom/th "desc")
-                (dom/th "amount")
-                (dom/th "controls")))
-              (dom/tbody
-               (ui-new-transaction-row new-transaction)
-               (map ui-transaction transactions)))))
+  (let [#_ (cljs.pprint/pprint {:props-in-trans-list props})]
+   (dom/div
+    (dom/table :.table
+               (dom/thead
+                (dom/tr
+                 (dom/th "date")
+                 (dom/th "payee")
+                 (dom/th "ledger")
+                 (dom/th "desc")
+                 (dom/th "amount")
+                 (dom/th "controls")))
+               (dom/tbody
+                (ui-new-transaction-row new-transaction)
+                (map ui-transaction transactions))))))
 
 (def ui-transaction-list (comp/factory TransactionList))
 
