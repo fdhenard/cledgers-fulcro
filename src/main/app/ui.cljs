@@ -1,46 +1,12 @@
 (ns app.ui
-  (:require [com.fulcrologic.fulcro.dom :as dom]
+  (:require ["react-number-format" :as NumberFormat]
+            [com.fulcrologic.fulcro.dom :as dom]
+            [com.fulcrologic.fulcro.dom.events :as evt]
+            [com.fulcrologic.fulcro.mutations :as muts]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
+            [com.fulcrologic.fulcro.algorithms.react-interop :as interop]
+            [app.math :as math]
             [app.mutations :as api]))
-
-#_(defsc Person [this {:person/keys [id name age] :as props} {:keys [onDelete]}]
-  {:query [:person/id :person/name :person/age]
-   :ident (fn [] [:person/id (:person/id props)])
-   :initial-state (fn [{:keys [id name age] :as params}]
-                    {:person/id id
-                     :person/name name
-                     :person/age age})}
-  (dom/li
-   (dom/h5 (str name " (age: " age ")")
-           (dom/button {:onClick #(onDelete id)} "X"))))
-
-#_(def ui-person (comp/factory Person {:keyfn :person/id}))
-
-#_(defsc PersonList [this {:list/keys [id label people] :as props}]
-  {:query [:list/id :list/label {:list/people (comp/get-query Person)}]
-   :ident (fn [] [:list/id (:list/id props)])
-   :initial-state
-   (fn [{:keys [id label]}]
-     {:list/id id
-      :list/label label
-      :list/people (case label
-                     "Friends"
-                     [(comp/get-initial-state Person {:id 1 :name "Sally" :age 32})
-                      (comp/get-initial-state Person {:id 2 :name "Joe" :age 22})]
-                     "Enemies"
-                     [(comp/get-initial-state Person {:id 3 :name "Fred" :age 11})
-                      (comp/get-initial-state Person {:id 4 :name "Bobby" :age 55})]
-                     (throw (js/Error. (str "invalid label " label))))})}
-  (let [delete-person
-        (fn [person-id]
-          (println label "asked to delete person" person-id)
-          (comp/transact! this [(api/delete-person {:list/id id :person/id person-id})]))]
-   (dom/div
-    (dom/h4 label)
-    (dom/ul
-     (map #(ui-person (comp/computed % {:onDelete delete-person})) people)))))
-
-#_(def ui-person-list (comp/factory PersonList))
 
 (defsc TransactionListItemPayee
   [this {:payee/keys [id name] :as props}]
@@ -73,6 +39,24 @@
 
 (def ui-transaction (comp/factory TransactionListItem {:keyfn :transaction/id}))
 
+(def ui-number-format (interop/react-factory NumberFormat))
+
+(defsc EditableMoneyInput
+  [this {:keys [value onChange]}]
+  {:initLocalState (fn [this props] {:editing? false})}
+  (let [{:keys [editing?]} (comp/get-state this)
+        attrs {:thousandSeparator true
+               :decimalScale 2
+               :prefix "$"
+               :value (math/bigdec->str value)
+               :onValueChange (fn [value]
+                                (let [str-value (.-value value)]
+                                  (when onChange
+                                    (onChange (math/bigdecimal str-value)))))}]
+    (ui-number-format attrs)))
+
+(def ui-editable-money-input (comp/factory EditableMoneyInput))
+
 (defsc NewTransactionRow [this {:new-transaction/keys [id description amount] :as props}]
   {:query [:new-transaction/id :new-transaction/description :new-transaction/amount]
    :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
@@ -95,9 +79,15 @@
     (dom/td "new payee")
     (dom/td "new ledger")
     (dom/td (dom/input {:type :text
-                        :value description}))
-    (dom/td (dom/input {:type :text
-                        :value amount}))
+                        :value description
+                        :onChange
+                        (fn [evt]
+                          (muts/set-value! this :new-transaction/description (evt/target-value evt)))}))
+    (dom/td (ui-editable-money-input {:value amount
+                                      :onChange
+                                      (fn [value]
+                                        #_(js/console.log "value = " value)
+                                        (muts/set-value! this :new-transaction/amount value))}))
     (dom/td (dom/button "what")))))
 
 (def ui-new-transaction-row (comp/factory NewTransactionRow))

@@ -1,0 +1,11 @@
+{
+    "name": "cledgers-luminus",
+    "version": "0.0.1",
+    "dependencies": {
+        "big.js": "^5.2.2",
+        "react": "^16.13.0",
+        "react-dom": "^16.13.0",
+        "react-number-format": "^4.4.1",
+        "shadow-cljs": "^2.8.91"
+    }
+}

@@ -1,6 +1,6 @@
 .cpcache
 node_modules
 package-lock.json
-package.json
+# package.json
 resources/public/js/main
 .shadow-cljs
