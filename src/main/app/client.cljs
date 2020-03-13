@@ -2,7 +2,7 @@
   (:require [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
-            [app.ui :as ui]
+            [app.ui.core :as ui]
             [app.application :refer [app]]))
 
 ;; (defonce app (app/fulcro-app))

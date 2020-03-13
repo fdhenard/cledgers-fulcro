@@ -1,4 +1,4 @@
-(ns app.ui
+(ns app.ui.core
   (:require ["react-number-format" :as NumberFormat]
             [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.dom.events :as evt]
@@ -6,7 +6,8 @@
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.algorithms.react-interop :as interop]
             [app.math :as math]
-            [app.mutations :as api]))
+            [app.mutations :as api]
+            [app.ui.bulma-typeahead :as typeahead]))
 
 (defsc TransactionListItemPayee
   [this {:payee/keys [id name] :as props}]
@@ -76,7 +77,7 @@
             (dom/input {:type :text
                         :size 4
                         :value "2002"}))
-    (dom/td "new payee")
+    (dom/td (typeahead/ui-typeahead-component))
     (dom/td "new ledger")
     (dom/td (dom/input {:type :text
                         :value description
@@ -108,18 +109,19 @@
                      :transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
   (let [#_ (cljs.pprint/pprint {:props-in-trans-list props})]
    (dom/div
-    (dom/table :.table
-               (dom/thead
-                (dom/tr
-                 (dom/th "date")
-                 (dom/th "payee")
-                 (dom/th "ledger")
-                 (dom/th "desc")
-                 (dom/th "amount")
-                 (dom/th "controls")))
-               (dom/tbody
-                (ui-new-transaction-row new-transaction)
-                (map ui-transaction transactions))))))
+    (dom/table
+     :.table
+     (dom/thead
+      (dom/tr
+       (dom/th "date")
+       (dom/th "payee")
+       (dom/th "ledger")
+       (dom/th "desc")
+       (dom/th "amount")
+       (dom/th "controls")))
+     (dom/tbody
+      (ui-new-transaction-row new-transaction)
+      (map ui-transaction transactions))))))
 
 (def ui-transaction-list (comp/factory TransactionList))
 
