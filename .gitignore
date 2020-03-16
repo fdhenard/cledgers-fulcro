@@ -4,3 +4,4 @@ package-lock.json
 # package.json
 resources/public/js/main
 .shadow-cljs
+.nrepl-port
