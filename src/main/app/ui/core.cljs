@@ -89,7 +89,10 @@
                         :size 4
                         :value "2002"}))
     (dom/td (typeahead/ui-typeahead-component
-             {:query-func get-payees!}))
+             {:query-func get-payees!
+              :item->text :name
+              :onChange (fn [value]
+                          (muts/set-value! this :new-transaction/payee value))}))
     (dom/td "new ledger")
     (dom/td (dom/input {:type :text
                         :value description

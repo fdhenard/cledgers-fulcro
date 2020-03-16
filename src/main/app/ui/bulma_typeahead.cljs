@@ -12,6 +12,7 @@
 
 (defsc TypeaheadTextbox
   [this {:keys [set-value!
+                get-value
                 query-func
                 set-matches!] :as props}]
   {:initLocalState (fn [this props]
@@ -19,6 +20,7 @@
                       :is-loading? false})}
   (let [_ (println "rendering TypeaheadTextbox")
         {:keys [is-loading?]} (comp/get-state this)
+        value (get-value)
         #_ (cljs.pprint/pprint {:value value})]
     (dom/div
      :.field
@@ -28,7 +30,7 @@
       :.input
       {:type :text
        :placeholder "something"
-       :value ""
+       :value value
        :onChange (fn [evt]
                    (let [#_ (println "old value:" @value-atom)
                          new-val (evt/target-value evt)
@@ -42,24 +44,32 @@
 (def ui-typeahead-textbox (comp/factory TypeaheadTextbox))
 
 (defsc TypeaheadComponent
-  [this {:keys [query-func] :as props}]
+  [this {:keys [query-func
+                item->text
+                onChange] :as props}]
   {:initLocalState (fn [this props]
-                     {:dropdown-expanded? true
+                     {;; :dropdown-expanded? true
+                      :should-expand-dropdown? false
                       :textbox-value ""
-                      :matches #{}})}
+                      :matches #{}
+                      :selection-value ""})}
   (let [_ (println "rendering TypeaheadComponent")
         #_ (cljs.pprint/pprint {:value value})
-        {:keys [dropdown-expanded?
+        {:keys [should-expand-dropdown?
                 textbox-value
-                matches]} (comp/get-state this)
+                matches
+                selection-value]} (comp/get-state this)
         set-matches! (fn [in] (comp/set-state! this {:matches in}))
-        set-textbox-value! (fn [in] (comp/set-state! this {:textbox-value in}))]
+        set-textbox-value! (fn [in] (comp/set-state! this {:textbox-value in}))
+        get-textbox-value (fn [] (comp/get-state this :textbox-value))
+        should-expand-dropdown? (not= textbox-value selection-value)]
     (dom/div
-     {:className (cls-set->str #{:dropdown (when dropdown-expanded? :is-active)})}
+     {:className (cls-set->str #{:dropdown (when should-expand-dropdown? :is-active)})}
      (dom/div
       :.dropdown-trigger
       (ui-typeahead-textbox {:set-matches! set-matches!
                              :set-value! set-textbox-value!
+                             :get-value get-textbox-value
                              :query-func query-func}))
      (dom/div
       :.dropdown-menu
@@ -68,13 +78,23 @@
       (dom/div
        :.dropdown-content
        (map
-        #(dom/a
-          :.dropdown-item
-          {:href "#"
-           ;; :on-click (fn [evt] ...)
-           :key (:id %)
-           }
-          (:name %))
+        (fn [item]
+          (let [text (item->text item)
+                id (:id item)]
+           (dom/a
+            :.dropdown-item
+            {:href "#"
+             ;; :on-click (fn [evt] ...)
+             :key id
+             :onClick (fn [evt]
+                        #_(println "hi")
+                        (comp/set-state! this {:textbox-value text
+                                               :selection-value text})
+                        (onChange {:value text
+                                   :is-new false
+                                   :id id}))
+             }
+            text)))
         matches))))))
 
 (def ui-typeahead-component (comp/factory TypeaheadComponent))
