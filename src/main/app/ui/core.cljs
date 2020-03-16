@@ -59,19 +59,31 @@
 (def ui-editable-money-input (comp/factory EditableMoneyInput))
 
 (defn get-payees! [q-str callback]
-  (let [_ (println "q-str = " q-str)]
+  (let [#_ (println "q-str = " q-str)]
    (callback [{:id 1
                :name "payee 1"}
               {:id 2
                :name "payee 3"}])))
 
-(defsc NewTransactionRow [this {:new-transaction/keys [id payee description amount] :as props}]
-  {:query [:new-transaction/id :new-transaction/payee :new-transaction/description :new-transaction/amount]
+(defn get-ledgers! [q-str callback]
+  (let [#_ (println "q-str = " q-str)]
+   (callback [{:id 1
+               :name "ledger 1"}
+              {:id 2
+               :name "ledger 4"}])))
+
+(defsc NewTransactionRow [this {:new-transaction/keys [id payee description amount ledger] :as props}]
+  {:query [:new-transaction/id
+           :new-transaction/payee
+           :new-transaction/ledger
+           :new-transaction/description
+           :new-transaction/amount]
    :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
    :initial-state (fn [params]
                     #_(cljs.pprint/pprint props)
                     {:new-transaction/id ::new-transaction
                      :new-transaction/payee nil
+                     :new-transaction/ledger nil
                      :new-transaction/description ""
                      :new-transaction/amount ""
                      })}
@@ -93,7 +105,11 @@
               :item->text :name
               :onChange (fn [value]
                           (muts/set-value! this :new-transaction/payee value))}))
-    (dom/td "new ledger")
+    (dom/td (typeahead/ui-typeahead-component
+             {:query-func get-ledgers!
+              :item->text :name
+              :onChange (fn [value]
+                          (muts/set-value! this :new-transaction/ledger value))}))
     (dom/td (dom/input {:type :text
                         :value description
                         :onChange
