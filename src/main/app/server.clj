@@ -1,9 +1,10 @@
 (ns app.server
-  (:require [app.parser :refer [api-parser]]
+  (:require [taoensso.timbre :as log]
             [org.httpkit.server :as http]
-            [com.fulcrologic.fulcro.server.api-middleware :as server]
+            [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
-            [ring.middleware.resource :refer [wrap-resource]]))
+            [com.fulcrologic.fulcro.server.api-middleware :as server]
+            [app.parser :refer [api-parser]]))
 
 (def ^:private not-found-handler
   (fn [req]
@@ -23,7 +24,8 @@
 (defonce stop-fn (atom nil))
 
 (defn start []
-  (reset! stop-fn (http/run-server middleware {:port 3000})))
+  (reset! stop-fn (http/run-server middleware {:port 3000}))
+  (log/info "started"))
 
 (defn stop []
   (when @stop-fn

@@ -1,9 +1,10 @@
 (ns app.parser
-  (:require [com.wsscode.pathom.core :as pathom]
+  (:require [taoensso.timbre :as log]
+            [com.wsscode.pathom.core :as pathom]
             [com.wsscode.pathom.connect :as pathom-connect]
-            [taoensso.timbre :as log]))
+            [app.resolvers]))
 
-(def resolvers [])
+(def resolvers [app.resolvers/resolvers])
 
 (def pathom-parser
   (pathom/parser {::pathom/env {::pathom/reader [pathom/map-reader
@@ -20,3 +21,11 @@
 (defn api-parser [query]
   (log/info "Process" query)
   (pathom-parser {} query))
+
+
+(comment
+
+  (clojure.pprint/pprint
+   (api-parser [{:all-ledgers [:app.models.ledger/id :app.models.ledger/name]}]))
+
+  )
