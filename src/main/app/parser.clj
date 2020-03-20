@@ -8,7 +8,7 @@
 
 (def pathom-parser
   (pathom/parser {::pathom/env {::pathom/reader [pathom/map-reader
-                                                 pathom-connect/reader 2
+                                                 pathom-connect/reader2
                                                  pathom-connect/ident-reader
                                                  pathom-connect/index-reader]
                                 ::pathom-connect/mutation-join-globals [:tempids]}
@@ -25,7 +25,16 @@
 
 (comment
 
-  (clojure.pprint/pprint
-   (api-parser [{:all-ledgers [:app.models.ledger/id :app.models.ledger/name]}]))
+  (let [res (api-parser [{:all-ledgers [:app.models.ledger/id :app.models.ledger/name]}])
+        _ (println)
+        _ (clojure.pprint/pprint res)])
+
+  (let [res (api-parser [{[:query "hi"] [{:q-results [:app.models.ledger/id]}]}])
+        _ (println)
+        _ (clojure.pprint/pprint res)])
+
+  (let [res (api-parser [{[:input 2] [:answer-plus-one]}])
+        _ (println)
+        _ (clojure.pprint/pprint res)])
 
   )

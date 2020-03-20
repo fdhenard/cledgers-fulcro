@@ -29,8 +29,24 @@
 
 (pathom-connect/defresolver all-ledgers-resolver [env {:app.models.ledger/keys [id]}]
   {::pathom-connect/output [{:all-ledgers [:app.models.ledger/id]}]}
-  {:all-ledgers (mapv
-                 #(hash-map :app.models.ledger/id %)
-                 (keys ledgers-table))})
+  (let [_ (clojure.pprint/pprint {:id-in id})]
+   {:all-ledgers (mapv
+                  #(hash-map :app.models.ledger/id %)
+                  (keys ledgers-table))}))
 
-(def resolvers [ledger-resolver all-ledgers-resolver])
+
+(pathom-connect/defresolver ledgers-q-resolver [env {:keys [query] :as params}]
+  {::pathom-connect/input #{:query}
+   ::pathom-connect/output [{:q-results [:app.models.ledger/id]}]}
+  (let [_ (clojure.pprint/pprint {:params params})]
+   {:q-results (mapv
+                #(hash-map :app.models.ledger/id %)
+                (keys ledgers-table))}))
+
+(pathom-connect/defresolver answer-plus-one-resolver [env {:keys [input] :as params}]
+  {::pathom-connect/input #{:input}
+   ::pathom-connect/output [:answer-plus-one]}
+  (let [_ (clojure.pprint/pprint {:params params})]
+   {:answer-plus-one (inc input)}))
+
+(def resolvers [ledger-resolver all-ledgers-resolver ledgers-q-resolver answer-plus-one-resolver])
