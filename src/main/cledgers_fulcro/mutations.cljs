@@ -1,4 +1,4 @@
-(ns app.mutations
+(ns cledgers-fulcro.mutations
   (:require [com.fulcrologic.fulcro.algorithms.merge :as merge]
             [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]))
 

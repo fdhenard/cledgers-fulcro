@@ -3,7 +3,7 @@
  :builds {:main {:target :browser
                  :output-dir "resources/public/js/main"
                  :asset-path "/js/main"
-                 :modules {:main {:init-fn app.client/init
-                                  :entries [app.client]}}
-                 :devtools {:after-load app.client/refresh
+                 :modules {:main {:init-fn cledgers-fulcro.client/init
+                                  :entries [cledgers-fulcro.client]}}
+                 :devtools {:after-load cledgers-fulcro.client/refresh
                             :preloads [com.fulcrologic.fulcro.inspect.preload]}}}}

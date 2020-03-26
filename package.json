@@ -1,5 +1,5 @@
 {
-    "name": "cledgers-luminus",
+    "name": "cledgers-fulcro",
     "version": "0.0.1",
     "dependencies": {
         "big.js": "^5.2.2",

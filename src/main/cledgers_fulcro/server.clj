@@ -1,10 +1,10 @@
-(ns app.server
+(ns cledgers-fulcro.server
   (:require [taoensso.timbre :as log]
             [org.httpkit.server :as http]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
             [com.fulcrologic.fulcro.server.api-middleware :as server]
-            [app.parser :refer [api-parser]]))
+            [cledgers-fulcro.parser :refer [api-parser]]))
 
 (def ^:private not-found-handler
   (fn [req]

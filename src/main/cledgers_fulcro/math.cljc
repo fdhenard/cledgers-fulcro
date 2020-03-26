@@ -1,4 +1,4 @@
-(ns app.math
+(ns cledgers-fulcro.math
   (:require #?@(:cljs [["big.js" :as Big]])
             [clojure.string :as str]
             [clojure.spec.alpha :as spec]

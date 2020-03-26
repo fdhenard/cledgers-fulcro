@@ -1,10 +1,10 @@
-(ns app.parser
+(ns cledgers-fulcro.parser
   (:require [taoensso.timbre :as log]
             [com.wsscode.pathom.core :as pathom]
             [com.wsscode.pathom.connect :as pathom-connect]
-            [app.resolvers]))
+            [cledgers-fulcro.resolvers]))
 
-(def resolvers [app.resolvers/resolvers])
+(def resolvers [cledgers-fulcro.resolvers/resolvers])
 
 (def pathom-parser
   (pathom/parser {::pathom/env {::pathom/reader [pathom/map-reader
@@ -25,11 +25,11 @@
 
 (comment
 
-  (let [res (api-parser [{:all-ledgers [:app.models.ledger/id :app.models.ledger/name]}])
+  (let [res (api-parser [{:all-ledgers [:cledgers-fulcro.models.ledger/id :cledgers-fulcro.models.ledger/name]}])
         _ (println)
         _ (clojure.pprint/pprint res)])
 
-  (let [res (api-parser [{[:query "hi"] [{:q-results [:app.models.ledger/id]}]}])
+  (let [res (api-parser [{[:query "hi"] [{:q-results [:cledgers-fulcro.models.ledger/id]}]}])
         _ (println)
         _ (clojure.pprint/pprint res)])
 

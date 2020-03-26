@@ -1,9 +1,9 @@
-(ns app.client
+(ns cledgers-fulcro.client
   (:require [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
-            [app.ui.core :as ui]
-            [app.application :refer [app]]))
+            [cledgers-fulcro.ui.core :as ui]
+            [cledgers-fulcro.application :refer [app]]))
 
 ;; (defonce app (app/fulcro-app))
 

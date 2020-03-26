@@ -1,5 +1,5 @@
 (ns user
-  (:require [app.server :as server]
+  (:require [cledgers-fulcro.server :as server]
             [clojure.tools.namespace.repl :as tools-ns :refer [set-refresh-dirs
                                                                refresh]]))
 

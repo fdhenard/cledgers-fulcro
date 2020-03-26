@@ -1,4 +1,4 @@
-(ns app.ui.bulma-typeahead
+(ns cledgers-fulcro.ui.bulma-typeahead
   (:require [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.dom.events :as evt]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]))

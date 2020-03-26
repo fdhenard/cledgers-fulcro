@@ -1,13 +1,13 @@
-(ns app.ui.core
+(ns cledgers-fulcro.ui.core
   (:require ["react-number-format" :as NumberFormat]
             [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.dom.events :as evt]
             [com.fulcrologic.fulcro.mutations :as muts]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.algorithms.react-interop :as interop]
-            [app.math :as math]
-            [app.mutations :as api]
-            [app.ui.bulma-typeahead :as typeahead]))
+            [cledgers-fulcro.math :as math]
+            [cledgers-fulcro.mutations :as api]
+            [cledgers-fulcro.ui.bulma-typeahead :as typeahead]))
 
 (defsc TransactionListItemPayee
   [this {:payee/keys [id name] :as props}]
