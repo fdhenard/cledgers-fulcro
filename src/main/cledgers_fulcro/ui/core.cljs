@@ -128,16 +128,20 @@
   {:query [{:transaction-list/new-transaction (comp/get-query NewTransactionRow)}
            {:transaction-list/transactions (comp/get-query TransactionListItem)}]
    :ident (fn [this props] [:component/id ::transaction-list])
-   :initial-state (fn [this props]
-                    {:transaction-list/transactions [(comp/get-initial-state TransactionListItem {:id 1
-                                                                                          :date "2020"
-                                                                                          ;; :payee "test payee"
-                                                                                          :payee {:id 1
-                                                                                                  :name "test payee"}
-                                                                                          :ledger "test ledger"
-                                                                                          :description "soem descrip"
-                                                                                                  :amount "1111.11"})]
-                     :transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
+   :initial-state
+   (fn [this props]
+     {:transaction-list/transactions
+      [(comp/get-initial-state
+        TransactionListItem
+        {:id 1
+         :date "2020"
+         ;; :payee "test payee"
+         :payee {:id 1
+                 :name "test payee"}
+         :ledger "test ledger"
+         :description "soem descrip"
+         :amount "1111.11"})]
+      :transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
   (let [#_ (cljs.pprint/pprint {:props-in-trans-list props})]
    (dom/div
     (dom/table
