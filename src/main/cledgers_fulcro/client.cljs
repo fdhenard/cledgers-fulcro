@@ -1,5 +1,6 @@
 (ns cledgers-fulcro.client
   (:require [com.fulcrologic.fulcro.dom :as dom]
+            [com.fulcrologic.fulcro.data-fetch :as df]
             [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [cledgers-fulcro.ui.core :as ui]
@@ -23,6 +24,12 @@
   `:init-fn` in the modules of the main build."
   []
   (app/mount! app ui/Root "app")
+  (df/load! app :all-payees ui/TransactionListItemPayee
+            #_{:target [:cledgers-fulcro.models.payee/id]})
+  (df/load! app :all-ledgers ui/TransactionListItemLedger
+            #_{:target [:cledgers-fulcro.models.ledger/id]})
+  (df/load! app :all-transactions ui/TransactionListItem
+            {:target [:component/id ::ui/transaction-list :transaction-list/transactions]})
   (js/console.log "Loaded"))
 
 (defn ^:export refresh

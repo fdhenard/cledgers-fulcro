@@ -10,35 +10,46 @@
             [cledgers-fulcro.ui.bulma-typeahead :as typeahead]))
 
 (defsc TransactionListItemPayee
-  [this {:payee/keys [id name] :as props}]
-  {:query [:payee/id :payee/name]
-   :ident (fn [] [:payee/id (:payee/id props)])
-   :initial-state (fn [{:keys [id name] :as params}]
-                    {:payee/id id
-                     :payee/name name})}
+  [this {:cledgers-fulcro.models.payee/keys [id name] :as props}]
+  {:query [:cledgers-fulcro.models.payee/id
+           :cledgers-fulcro.models.payee/name]
+   :ident :cledgers-fulcro.models.payee/id}
   name)
 
 (def ui-transaction-list-item-payee (comp/factory TransactionListItemPayee))
 
-(defsc TransactionListItem [this {:transaction/keys [id date payee ledger description amount] :as props}]
-  {:query [:transaction/id :transaction/date :transaction/payee :transaction/ledger :transaction/description :transaction/amount]
-   :ident (fn [] [:transaction/id (:transaction/id props)])
-   :initial-state (fn [{:keys [id date payee ledger description amount] :as params}]
-                    {:transaction/id id
-                     :transaction/date date
-                     :transaction/payee (comp/get-initial-state TransactionListItemPayee payee)
-                     :transaction/ledger ledger
-                     :transaction/description description
-                     :transaction/amount amount})}
+(defsc TransactionListItemLedger
+  [this {:cledgers-fulcro.models.ledger/keys [id name] :as props}]
+  {:query [:cledgers-fulcro.models.ledger/id
+           :cledgers-fulcro.models.ledger/name]
+   :ident :cledgers-fulcro.models.ledger/id}
+  (let [#_ (println "rendering TransactionListItemLedger")]
+   name))
+
+(def ui-transaction-list-item-ledger (comp/factory TransactionListItemLedger))
+
+(defsc TransactionListItem [this {:cledgers-fulcro.models.transaction/keys [id
+                                                                           date
+                                                                           payee
+                                                                           ledger
+                                                                           description
+                                                                           amount] :as props}]
+  {:query [:cledgers-fulcro.models.transaction/id
+           :cledgers-fulcro.models.transaction/date
+           {:cledgers-fulcro.models.transaction/payee (comp/get-query TransactionListItemPayee)}
+           {:cledgers-fulcro.models.transaction/ledger (comp/get-query TransactionListItemLedger)}
+           :cledgers-fulcro.models.transaction/description
+           :cledgers-fulcro.models.transaction/amount]
+   :ident (fn [] [:cledgers-fulcro.models.transaction/id (:cledgers-fulcro.models.transaction/id props)])}
   (dom/tr
      (dom/td date)
      (dom/td (ui-transaction-list-item-payee payee))
-     (dom/td ledger)
+     (dom/td (ui-transaction-list-item-ledger ledger))
      (dom/td description)
      (dom/td amount)
      (dom/td "something")))
 
-(def ui-transaction (comp/factory TransactionListItem {:keyfn :transaction/id}))
+(def ui-transaction (comp/factory TransactionListItem {:keyfn :cledgers-fulcro.models.transaction/id}))
 
 (def ui-number-format (interop/react-factory NumberFormat))
 
@@ -130,18 +141,7 @@
    :ident (fn [this props] [:component/id ::transaction-list])
    :initial-state
    (fn [this props]
-     {:transaction-list/transactions
-      [(comp/get-initial-state
-        TransactionListItem
-        {:id 1
-         :date "2020"
-         ;; :payee "test payee"
-         :payee {:id 1
-                 :name "test payee"}
-         :ledger "test ledger"
-         :description "soem descrip"
-         :amount "1111.11"})]
-      :transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
+     {:transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
   (let [#_ (cljs.pprint/pprint {:props-in-trans-list props})]
    (dom/div
     (dom/table

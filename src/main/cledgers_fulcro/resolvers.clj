@@ -39,11 +39,14 @@
    ::pathom-connect/output [:cledgers-fulcro.models.payee/name]}
   (get payees-table id))
 
-(pathom-connect/defresolver all-payees-resolver [env {:cledgers-fulcro.models.ledger/keys [id]}]
-  {:pathom-connect/output [{:all-payees [:cledgers-fulcro.models.payee/id]}]}
-  {:all-payees (mapv
-                #(hash-map :cledgers-fulcro.models.payee/id %)
-                (keys payees-table))})
+(pathom-connect/defresolver all-payees-resolver [env {:cledgers-fulcro.models.payee/keys [id]}]
+  {::pathom-connect/output [{:all-payees [:cledgers-fulcro.models.payee/id]}]}
+  (let [#_ (println "invoking all-payees-resolver")
+        result (mapv
+                 #(hash-map :cledgers-fulcro.models.payee/id %)
+                 (keys payees-table))
+        #_ (clojure.pprint/pprint result)]
+   {:all-payees result}))
 
 
 (pathom-connect/defresolver ledgers-q-resolver [env {:keys [query] :as params}]
@@ -71,9 +74,12 @@
 
 (pathom-connect/defresolver all-transactions-resolver [env {:cledgers-fulcro.models.transaction/keys [id]}]
   {::pathom-connect/output [{:all-transactions [:cledgers-fulcro.models.transaction/id]}]}
-  {:all-transactions (mapv
-                      #(hash-map :cledgers-fulcro.models.transaction/id %)
-                      (keys transactions-table))})
+  (let [#_ (println "\ninvoking all-transactions-resolver. result:")
+        result (mapv
+                #(hash-map :cledgers-fulcro.models.transaction/id %)
+                (keys transactions-table))
+        #_ (clojure.pprint/pprint result)]
+   {:all-transactions result}))
 
 (def resolvers [ledger-resolver
                 all-ledgers-resolver

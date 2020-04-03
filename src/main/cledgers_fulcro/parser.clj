@@ -44,4 +44,9 @@
         _ (println)
         _ (clojure.pprint/pprint res)])
 
+  (let [res (api-parser [{:all-payees [:cledgers-fulcro.models.payee/id
+                                       :cledgers-fulcro.models.payee/name]}])
+        _ (println)
+        _ (clojure.pprint/pprint res)])
+
   )
