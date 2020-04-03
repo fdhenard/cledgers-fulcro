@@ -1,7 +1,7 @@
 {:paths ["src/main" "resources"]
  
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
-        com.fulcrologic/fulcro {:mvn/version "3.1.20"}
+        com.fulcrologic/fulcro {:mvn/version "3.2.0"}
         gnl/ghostwheel {:mvn/version "0.3.9"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
         com.wsscode/pathom {:mvn/version "2.2.31"}
