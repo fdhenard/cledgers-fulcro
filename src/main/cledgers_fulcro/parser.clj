@@ -37,4 +37,11 @@
         _ (println)
         _ (clojure.pprint/pprint res)])
 
+  (let [res (api-parser [{:all-transactions [:cledgers-fulcro.models.transaction/id
+                                             :cledgers-fulcro.models.transaction/description
+                                             {:cledgers-fulcro.models.transaction/ledger
+                                              [:cledgers-fulcro.models.ledger/name]}]}])
+        _ (println)
+        _ (clojure.pprint/pprint res)])
+
   )
