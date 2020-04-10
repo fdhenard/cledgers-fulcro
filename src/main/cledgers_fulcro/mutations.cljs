@@ -1,6 +1,7 @@
 (ns cledgers-fulcro.mutations
   (:require [com.fulcrologic.fulcro.algorithms.merge :as merge]
-            [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]))
+            [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
+            [cledgers-fulcro.utils.utils :as utils]))
 
 (defmutation add-transaction
   [{:keys [id description amount] :as mut-in}]
@@ -19,5 +20,21 @@
          state
          update-in
          [:component/id :cledgers-fulcro.ui.core/transaction-list :transaction-list/transactions]
-         #(conj % new-xaction-key)))))
-  )
+         #(conj % new-xaction-key))
+
+        (let [new-new-xaction (utils/new-xaction)
+              new-new-xaction-id (:new-transaction/id new-new-xaction)]
+          (do
+            (swap!
+             state
+             assoc-in
+             [:new-transaction/id new-new-xaction-id]
+             new-new-xaction)
+
+            (swap!
+             state
+             assoc-in
+             [:component/id
+              :cledgers-fulcro.ui.core/transaction-list
+              :transaction-list/new-transaction]
+             [:new-transaction/id new-new-xaction-id])))))))

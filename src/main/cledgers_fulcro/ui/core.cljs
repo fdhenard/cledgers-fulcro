@@ -8,6 +8,7 @@
             ["react-number-format" :as NumberFormat]
             [cledgers-fulcro.math :as math]
             [cledgers-fulcro.mutations :as api]
+            [cledgers-fulcro.utils.utils :as utils]
             [cledgers-fulcro.ui.bulma-typeahead :as typeahead]))
 
 (defsc TransactionListItemPayee
@@ -47,7 +48,7 @@
      (dom/td (ui-transaction-list-item-payee payee))
      (dom/td (ui-transaction-list-item-ledger ledger))
      (dom/td description)
-     (dom/td amount)
+     (dom/td (math/bigdec->str amount))
      (dom/td "something")))
 
 (def ui-transaction (comp/factory TransactionListItem {:keyfn :cledgers-fulcro.models.transaction/id}))
@@ -80,12 +81,7 @@
            [:cledgers-fulcro.models.payee/id '_]]
    :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
    :initial-state (fn [params]
-                    #_(cljs.pprint/pprint props)
-                    {:new-transaction/id (tempid/tempid)
-                     :new-transaction/payee nil
-                     :new-transaction/ledger nil
-                     :new-transaction/description ""
-                     :new-transaction/amount ""})}
+                    (utils/new-xaction))}
   (let [#_ (cljs.pprint/pprint {:props-in-new-trans-row props})
         ledgers (-> props :cledgers-fulcro.models.ledger/id vals)
         payees (-> props :cledgers-fulcro.models.payee/id vals)
@@ -144,7 +140,7 @@
               (fn [evt]
                 (comp/transact! this [(api/add-transaction {:id id
                                                             :description description
-                                                            :amount 1111})]))}
+                                                            :amount amount})]))}
              "add")))))
 
 (def ui-new-transaction-row (comp/factory NewTransactionRow))

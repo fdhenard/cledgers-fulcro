@@ -6,7 +6,7 @@
             [ghostwheel.core :refer [>defn =>]]))
 
 (>defn bigdecimal?
-    [value]
+  [value]
   [any? => boolean?]
   #?(:clj (instance? java.math.BigDecimal value)
      :cljs (transit/bigdec? value)))
