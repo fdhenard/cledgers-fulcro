@@ -1,10 +1,11 @@
 (ns cledgers-fulcro.ui.core
-  (:require ["react-number-format" :as NumberFormat]
-            [com.fulcrologic.fulcro.dom :as dom]
+  (:require [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.dom.events :as evt]
             [com.fulcrologic.fulcro.mutations :as muts]
+            [com.fulcrologic.fulcro.algorithms.tempid :as tempid]
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.algorithms.react-interop :as interop]
+            ["react-number-format" :as NumberFormat]
             [cledgers-fulcro.math :as math]
             [cledgers-fulcro.mutations :as api]
             [cledgers-fulcro.ui.bulma-typeahead :as typeahead]))
@@ -24,7 +25,7 @@
            :cledgers-fulcro.models.ledger/name]
    :ident :cledgers-fulcro.models.ledger/id}
   (let [#_ (println "rendering TransactionListItemLedger")]
-   name))
+    name))
 
 (def ui-transaction-list-item-ledger (comp/factory TransactionListItemLedger))
 
@@ -80,12 +81,11 @@
    :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
    :initial-state (fn [params]
                     #_(cljs.pprint/pprint props)
-                    {:new-transaction/id ::new-transaction
+                    {:new-transaction/id (tempid/tempid)
                      :new-transaction/payee nil
                      :new-transaction/ledger nil
                      :new-transaction/description ""
-                     :new-transaction/amount ""
-                     })}
+                     :new-transaction/amount ""})}
   (let [#_ (cljs.pprint/pprint {:props-in-new-trans-row props})
         ledgers (-> props :cledgers-fulcro.models.ledger/id vals)
         payees (-> props :cledgers-fulcro.models.payee/id vals)
@@ -139,7 +139,13 @@
                                       (fn [value]
                                         #_(js/console.log "value = " value)
                                         (muts/set-value! this :new-transaction/amount value))}))
-    (dom/td (dom/button "what")))))
+    (dom/td (dom/button
+             {:onClick
+              (fn [evt]
+                (comp/transact! this [(api/add-transaction {:id id
+                                                            :description description
+                                                            :amount 1111})]))}
+             "add")))))
 
 (def ui-new-transaction-row (comp/factory NewTransactionRow))
 

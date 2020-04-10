@@ -2,14 +2,22 @@
   (:require [com.fulcrologic.fulcro.algorithms.merge :as merge]
             [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]))
 
-
-
-(defmutation delete-person
-  "Mutation: Delete the person with `:person/id` from the list with `:list/id`"
-  [{list-id :list/id
-    person-id :person/id}]
-  (action [{:keys [state]}]
-          (swap! state merge/remove-ident* [:person/id person-id] [:list/id list-id :list/people])))
-
-
-#_(defmutation )
+(defmutation add-transaction
+  [{:keys [id description amount] :as mut-in}]
+  (action [{:keys [state] :as action-in}]
+    (let [#_ (cljs.pprint/pprint {:state @state})
+          new-xaction-key [:cledgers-fulcro.models.transaction/id id]]
+      (do
+        (swap!
+         state
+         assoc-in
+         new-xaction-key
+         #:cledgers-fulcro.models.transaction{:id id
+                                              :description description
+                                              :amount amount})
+        (swap!
+         state
+         update-in
+         [:component/id :cledgers-fulcro.ui.core/transaction-list :transaction-list/transactions]
+         #(conj % new-xaction-key)))))
+  )
