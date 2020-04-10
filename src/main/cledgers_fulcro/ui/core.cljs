@@ -69,26 +69,14 @@
 
 (def ui-editable-money-input (comp/factory EditableMoneyInput))
 
-(defn get-payees! [q-str callback]
-  (let [#_ (println "q-str = " q-str)]
-   (callback [{:id 1
-               :name "payee 1"}
-              {:id 2
-               :name "payee 3"}])))
-
-(defn get-ledgers! [q-str callback]
-  (let [#_ (println "q-str = " q-str)]
-   (callback [{:id 1
-               :name "ledger 1"}
-              {:id 2
-               :name "ledger 4"}])))
-
 (defsc NewTransactionRow [this {:new-transaction/keys [id payee description amount ledger] :as props}]
   {:query [:new-transaction/id
            :new-transaction/payee
            :new-transaction/ledger
            :new-transaction/description
-           :new-transaction/amount]
+           :new-transaction/amount
+           [:cledgers-fulcro.models.ledger/id '_]
+           [:cledgers-fulcro.models.payee/id '_]]
    :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
    :initial-state (fn [params]
                     #_(cljs.pprint/pprint props)
@@ -98,7 +86,11 @@
                      :new-transaction/description ""
                      :new-transaction/amount ""
                      })}
-  (let [#_ (cljs.pprint/pprint {:props-in-new-trans-row props})]
+  (let [#_ (cljs.pprint/pprint {:props-in-new-trans-row props})
+        ledgers (-> props :cledgers-fulcro.models.ledger/id vals)
+        payees (-> props :cledgers-fulcro.models.payee/id vals)
+        #_ (cljs.pprint/pprint {:ledgers ledgers
+                               :payees payees})]
    (dom/tr
     (dom/td (dom/input {:type :text
                         :size 2
@@ -112,13 +104,29 @@
                         :size 4
                         :value "2002"}))
     (dom/td (typeahead/ui-typeahead-component
-             {:query-func get-payees!
-              :item->text :name
+             {:query-func (fn [q-str callback]
+                            (let [payee-name-starts-with?
+                                  (fn [payee q-str]
+                                    (let [#_ (cljs.pprint/pprint {:payee payee
+                                                                 :q-str q-str})
+                                          payee-name (:cledgers-fulcro.models.payee/name payee)]
+                                      (clojure.string/starts-with? payee-name q-str)))
+                                  matches (filter #(payee-name-starts-with? % q-str) payees)]
+                              (callback matches)))
+              :item->text :cledgers-fulcro.models.payee/name
+              :item->id :cledgers-fulcro.models.payee/id
               :onChange (fn [value]
                           (muts/set-value! this :new-transaction/payee value))}))
     (dom/td (typeahead/ui-typeahead-component
-             {:query-func get-ledgers!
-              :item->text :name
+             {:query-func (fn [q-str callback]
+                            (let [ledger-name-starts-with?
+                                  (fn [ledger q-str]
+                                    (let [ledger-name (:cledgers-fulcro.models.ledger/name ledger)]
+                                      (clojure.string/starts-with? ledger-name q-str)))
+                                  matches (filter #(ledger-name-starts-with? % q-str) ledgers)]
+                              (callback matches)))
+              :item->text :cledgers-fulcro.models.ledger/name
+              :item->id :cledgers-fulcro.models.ledger/id
               :onChange (fn [value]
                           (muts/set-value! this :new-transaction/ledger value))}))
     (dom/td (dom/input {:type :text

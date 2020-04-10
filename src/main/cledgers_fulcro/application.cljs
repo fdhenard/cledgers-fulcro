@@ -11,3 +11,12 @@
                ;; :client-did-mount (fn [app]
                ;;                     (df/load! app :all-transactions ui/TransactionListItem))
                }))
+
+
+
+(comment
+
+  (fc-app/current-state app)
+
+
+  )

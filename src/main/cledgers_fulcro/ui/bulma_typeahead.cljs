@@ -46,6 +46,7 @@
 (defsc TypeaheadComponent
   [this {:keys [query-func
                 item->text
+                item->id
                 onChange] :as props}]
   {:initLocalState (fn [this props]
                      {;; :dropdown-expanded? true
@@ -79,8 +80,9 @@
        :.dropdown-content
        (map
         (fn [item]
-          (let [text (item->text item)
-                id (:id item)]
+          (let [#_ (cljs.pprint/pprint item)
+                text (item->text item)
+                id (item->id item)]
            (dom/a
             :.dropdown-item
             {:href "#"
