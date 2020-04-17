@@ -7,10 +7,14 @@
         com.wsscode/pathom {:mvn/version "2.2.31"}
         com.taoensso/timbre {:mvn/version "4.10.0"}
         ring/ring-core {:mvn/version "1.8.0"}
-        http-kit {:mvn/version "2.3.0"}}
+        http-kit {:mvn/version "2.3.0"}
+        ;; for tick, wait till after clojurescript release > 1.10.597
+        ;; waiting for bug fix https://github.com/henryw374/tick-on-shadow-cljs-demo/issues/1
+        ;; tick {:mvn/version "0.4.23-alpha"}
+        }
  
  :aliases {:dev {:extra-paths ["src/dev"]
                  :extra-deps {org.clojure/clojurescript {:mvn/version "1.10.597"}
-                              thheller/shadow-cljs {:mvn/version "2.8.92"}
+                              thheller/shadow-cljs {:mvn/version "2.8.96"}
                               binaryage/devtools {:mvn/version "1.0.0"}
                               org.clojure/tools.namespace {:mvn/version "1.0.0"}}}}}
