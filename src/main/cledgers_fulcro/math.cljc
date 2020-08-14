@@ -18,11 +18,16 @@
                                           (bigdecimal "5.00")
                                           (bigdecimal "42.11")})))
 
+#?(:cljs (defn big-rep [^Big bd]
+           (some-> bd .-rep)))
+
 (>defn bigdec->str [bd]
   [(spec/nilable ::bigdecimal) => string?]
   (if-not bd
     ""
-    #?(:cljs (or (some-> bd .-rep) "0")
+    #?(:cljs (or #_(some-> bd .-rep)
+                 (big-rep bd)
+                 "0")
        :clj (str bd))))
 
 (defn strip-zeroes [s]

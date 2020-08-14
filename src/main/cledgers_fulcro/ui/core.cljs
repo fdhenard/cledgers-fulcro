@@ -1,5 +1,7 @@
 (ns cledgers-fulcro.ui.core
-  (:require [com.fulcrologic.fulcro.dom :as dom]
+  (:require [cljs.pprint :as pp]
+            [clojure.string :as str]
+            [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.dom.events :as evt]
             [com.fulcrologic.fulcro.mutations :as muts]
             [com.fulcrologic.fulcro.algorithms.tempid :as tempid]
@@ -31,11 +33,11 @@
 (def ui-transaction-list-item-ledger (comp/factory TransactionListItemLedger))
 
 (defsc TransactionListItem [this {:cledgers-fulcro.models.transaction/keys [id
-                                                                           date
-                                                                           payee
-                                                                           ledger
-                                                                           description
-                                                                           amount] :as props}]
+                                                                            date
+                                                                            payee
+                                                                            ledger
+                                                                            description
+                                                                            amount] :as props}]
   {:query [:cledgers-fulcro.models.transaction/id
            :cledgers-fulcro.models.transaction/date
            {:cledgers-fulcro.models.transaction/payee (comp/get-query TransactionListItemPayee)}
@@ -43,13 +45,13 @@
            :cledgers-fulcro.models.transaction/description
            :cledgers-fulcro.models.transaction/amount]
    :ident (fn [] [:cledgers-fulcro.models.transaction/id (:cledgers-fulcro.models.transaction/id props)])}
-  (dom/tr
-     (dom/td date)
-     (dom/td (ui-transaction-list-item-payee payee))
-     (dom/td (ui-transaction-list-item-ledger ledger))
-     (dom/td description)
-     (dom/td (math/bigdec->str amount))
-     (dom/td "something")))
+  (dom/tr {:key id}
+   (dom/td date)
+   (dom/td (ui-transaction-list-item-payee payee))
+   (dom/td (ui-transaction-list-item-ledger ledger))
+   (dom/td description)
+   (dom/td (math/bigdec->str amount))
+   (dom/td "something")))
 
 (def ui-transaction (comp/factory TransactionListItem {:keyfn :cledgers-fulcro.models.transaction/id}))
 
@@ -106,25 +108,28 @@
                                     (let [#_ (cljs.pprint/pprint {:payee payee
                                                                  :q-str q-str})
                                           payee-name (:cledgers-fulcro.models.payee/name payee)]
-                                      (clojure.string/starts-with? payee-name q-str)))
+                                      (str/starts-with? payee-name q-str)))
                                   matches (filter #(payee-name-starts-with? % q-str) payees)]
                               (callback matches)))
               :item->text :cledgers-fulcro.models.payee/name
               :item->id :cledgers-fulcro.models.payee/id
               :onChange (fn [value]
-                          (muts/set-value! this :new-transaction/payee value))}))
+                          (let [pathom-val [:cledgers-fulcro.models.payee/id (:id value)]]
+                           (muts/set-value! this :new-transaction/payee pathom-val)))}))
     (dom/td (typeahead/ui-typeahead-component
              {:query-func (fn [q-str callback]
                             (let [ledger-name-starts-with?
                                   (fn [ledger q-str]
                                     (let [ledger-name (:cledgers-fulcro.models.ledger/name ledger)]
-                                      (clojure.string/starts-with? ledger-name q-str)))
+                                      (str/starts-with? ledger-name q-str)))
                                   matches (filter #(ledger-name-starts-with? % q-str) ledgers)]
                               (callback matches)))
               :item->text :cledgers-fulcro.models.ledger/name
               :item->id :cledgers-fulcro.models.ledger/id
               :onChange (fn [value]
-                          (muts/set-value! this :new-transaction/ledger value))}))
+                          (let [#_ (pp/pprint {:ledger-on-change-value value})
+                                pathom-val [:cledgers-fulcro.models.ledger/id (:id value)]
+                                _ (muts/set-value! this :new-transaction/ledger pathom-val)]))}))
     (dom/td (dom/input {:type :text
                         :value description
                         :onChange
@@ -138,9 +143,14 @@
     (dom/td (dom/button
              {:onClick
               (fn [evt]
-                (comp/transact! this [(api/add-transaction {:id id
-                                                            :description description
-                                                            :amount amount})]))}
+                (comp/transact!
+                 this
+                 [(api/add-transaction
+                   #:cledgers-fulcro.models.transaction{:id id
+                                                        :payee payee
+                                                        :description description
+                                                        :amount amount
+                                                        :ledger ledger})]))}
              "add")))))
 
 (def ui-new-transaction-row (comp/factory NewTransactionRow))

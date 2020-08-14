@@ -1,21 +1,21 @@
 (ns cledgers-fulcro.mutations
-  (:require [com.fulcrologic.fulcro.algorithms.merge :as merge]
+  (:require [cljs.pprint :as pp]
+            #_[com.fulcrologic.fulcro.algorithms.merge :as merge]
             [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
             [cledgers-fulcro.utils.utils :as utils]))
 
 (defmutation add-transaction
-  [{:keys [id description amount] :as mut-in}]
+    [{:keys [id payee description amount ledger] :as mut-in}]
   (action [{:keys [state] :as action-in}]
-    (let [#_ (cljs.pprint/pprint {:state @state})
+    (let [#_ (pp/pprint {;; :state @state
+                        :xaction-in mut-in})
           new-xaction-key [:cledgers-fulcro.models.transaction/id id]]
       (do
         (swap!
          state
          assoc-in
          new-xaction-key
-         #:cledgers-fulcro.models.transaction{:id id
-                                              :description description
-                                              :amount amount})
+         mut-in)
         (swap!
          state
          update-in
