@@ -9,8 +9,8 @@
             [com.fulcrologic.fulcro.algorithms.react-interop :as interop]
             ["react-number-format" :as NumberFormat]
             [cledgers-fulcro.math :as math]
-            [cledgers-fulcro.mutations :as api]
             [cledgers-fulcro.utils.utils :as utils]
+            [cledgers-fulcro.mutations-client :as muts-client]
             [cledgers-fulcro.ui.bulma-typeahead :as typeahead]))
 
 (defsc TransactionListItemPayee
@@ -145,7 +145,7 @@
               (fn [evt]
                 (comp/transact!
                  this
-                 [(api/add-transaction
+                 [(muts-client/add-transaction
                    #:cledgers-fulcro.models.transaction{:id id
                                                         :payee payee
                                                         :description description

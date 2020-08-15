@@ -1,5 +1,6 @@
 (ns cledgers-fulcro.server
-  (:require [taoensso.timbre :as log]
+  (:require [clojure.pprint :as pp]
+            [taoensso.timbre :as log]
             [org.httpkit.server :as http]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
@@ -8,9 +9,10 @@
 
 (def ^:private not-found-handler
   (fn [req]
-    {:status 404
-     :headers {"Content-type" "text/plain"}
-     :body "Not Found"}))
+    (let [#_ (pp/pprint {:request req})]
+     {:status 404
+      :headers {"Content-type" "text/plain"}
+      :body "Not Found"})))
 
 (def middleware
   (-> not-found-handler
