@@ -1,0 +1,3 @@
+;; see namespace cledgers-fulcro.config.core
+
+{:stub nil} ;; stub because it can't be an empty map

@@ -1,5 +1,6 @@
 (ns cledgers-fulcro.server
   (:require [clojure.pprint :as pp]
+            [mount.core :as mount]
             [taoensso.timbre :as log]
             [org.httpkit.server :as http]
             [ring.middleware.resource :refer [wrap-resource]]
@@ -23,13 +24,7 @@
       (wrap-resource "public")
       wrap-content-type))
 
-(defonce stop-fn (atom nil))
-
-(defn start []
-  (reset! stop-fn (http/run-server middleware {:port 3000}))
-  (log/info "started"))
-
-(defn stop []
-  (when @stop-fn
-    (@stop-fn)
-    (reset! stop-fn nil)))
+(mount/defstate server
+  :start (http/run-server middleware {:port 3000})
+  ;; the result of run-server is the stop function
+  :stop (server))

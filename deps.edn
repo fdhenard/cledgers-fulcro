@@ -11,6 +11,10 @@
         ;; for tick, wait till after clojurescript release > 1.10.597
         ;; waiting for bug fix https://github.com/henryw374/tick-on-shadow-cljs-demo/issues/1
         tick {:mvn/version "0.4.26-alpha"}
+        seancorfield/next.jdbc {:mvn/version "1.1.582"}
+        org.postgresql/postgresql {:mvn/version "42.2.16"}
+        mount {:mvn/version "0.1.16"}
+        cprop {:mvn/version "0.1.17"}
         }
  
  :aliases {:dev {:extra-paths ["src/dev"]

@@ -1,7 +1,9 @@
 (ns user
-  (:require [cledgers-fulcro.server :as server]
+  (:require [mount.core :as mount]
             [clojure.tools.namespace.repl :as tools-ns :refer [set-refresh-dirs
-                                                               refresh]]))
+                                                               refresh]]
+            [cledgers-fulcro.db.core :as db]
+            [cledgers-fulcro.server :as server]))
 
 ;; Ensure we only refresh the source we care about. This is important
 ;; because `resources` is on our classpath and we don't want to
@@ -9,14 +11,14 @@
 (set-refresh-dirs "src/dev" "src/main")
 
 (defn start []
-  (server/start))
+  (mount/start))
 
 (defn restart
   "Stop the server, reload all source code, then restart the server.
   
   See documentation of tools.namespace.repl for more information"
   []
-  (server/stop)
+  (mount/stop)
   (refresh :after 'user/start))
 
 (comment
@@ -27,6 +29,5 @@
   (start)
 
   (restart)
-
 
   )
