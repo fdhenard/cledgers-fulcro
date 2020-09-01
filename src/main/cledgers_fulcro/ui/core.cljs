@@ -45,7 +45,7 @@
            :cledgers-fulcro.models.transaction/description
            :cledgers-fulcro.models.transaction/amount]
    :ident (fn [] [:cledgers-fulcro.models.transaction/id (:cledgers-fulcro.models.transaction/id props)])}
-  (let [_ (pp/pprint {:TransactionListItem {:date date}})]
+  (let [#_ (pp/pprint {:TransactionListItem {:date date}})]
    (dom/tr {:key id}
            (dom/td date)
            (dom/td (ui-transaction-list-item-payee payee))
