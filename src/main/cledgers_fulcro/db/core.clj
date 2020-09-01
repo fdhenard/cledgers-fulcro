@@ -12,6 +12,10 @@
              :host host
              :user username})))
 
+(def QUALIFIER_MAPPING {"xaction" "cledgers-fulcro.models.transaction"
+                        "ledger" "cledgers-fulcro.models.ledger"
+                        "payee" "cledgers-fulcro.models.payee"})
+
 
 (comment
 

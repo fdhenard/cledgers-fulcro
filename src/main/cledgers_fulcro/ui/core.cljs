@@ -45,13 +45,14 @@
            :cledgers-fulcro.models.transaction/description
            :cledgers-fulcro.models.transaction/amount]
    :ident (fn [] [:cledgers-fulcro.models.transaction/id (:cledgers-fulcro.models.transaction/id props)])}
-  (dom/tr {:key id}
-   (dom/td date)
-   (dom/td (ui-transaction-list-item-payee payee))
-   (dom/td (ui-transaction-list-item-ledger ledger))
-   (dom/td description)
-   (dom/td (math/bigdec->str amount))
-   (dom/td "something")))
+  (let [_ (pp/pprint {:TransactionListItem {:date date}})]
+   (dom/tr {:key id}
+           (dom/td date)
+           (dom/td (ui-transaction-list-item-payee payee))
+           (dom/td (ui-transaction-list-item-ledger ledger))
+           (dom/td description)
+           (dom/td (math/bigdec->str amount))
+           (dom/td "something"))))
 
 (def ui-transaction (comp/factory TransactionListItem {:keyfn :cledgers-fulcro.models.transaction/id}))
 
@@ -183,6 +184,7 @@
 (defsc Root
   [this {:root/keys [transaction-list]}]
   {:query [{:root/transaction-list (comp/get-query TransactionList)}]
-   :initial-state (fn [this] {:root/transaction-list (comp/get-initial-state TransactionList)})}
+   :initial-state (fn [this] {:root/transaction-list (comp/get-initial-state TransactionList)})
+   }
   (dom/div
    (ui-transaction-list transaction-list)))

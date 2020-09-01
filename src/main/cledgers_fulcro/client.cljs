@@ -25,7 +25,7 @@
   []
   (app/mount! app ui/Root "app")
   (df/load! app :all-payees ui/TransactionListItemPayee
-            #_{:target [:cledgers-fulcro.models.payee/id]})
+            {:target [:cledgers-fulcro.models.payee/id]})
   (df/load! app :all-ledgers ui/TransactionListItemLedger
             #_{:target [:cledgers-fulcro.models.ledger/id]})
   (df/load! app :all-transactions ui/TransactionListItem
