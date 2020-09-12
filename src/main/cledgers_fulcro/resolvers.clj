@@ -6,17 +6,17 @@
             [com.wsscode.pathom.connect :as pathom-connect]
             [cledgers-fulcro.db.core :as db]))
 
-(def ledgers-table
+#_(def ledgers-table
   {1 #:cledgers-fulcro.models.ledger{:id 1 :name "ledger 1"}
    2 #:cledgers-fulcro.models.ledger{:id 2 :name "ledger 2"}
    3 #:cledgers-fulcro.models.ledger{:id 3 :name "ledger 3"}})
 
-(def payees-table
+#_(def payees-table
   {1 #:cledgers-fulcro.models.payee{:id 1 :name "payee 1"}
    2 #:cledgers-fulcro.models.payee{:id 2 :name "payee 2"}
    3 #:cledgers-fulcro.models.payee{:id 3 :name "payee 3"}})
 
-(def transactions-table
+#_(def transactions-table
   {1 #:cledgers-fulcro.models.transaction{:id 1
                                           :date "2020"
                                           :payee {:cledgers-fulcro.models.payee/id 1}
@@ -27,8 +27,7 @@
 (pathom-connect/defresolver ledger-resolver [env {:cledgers-fulcro.models.ledger/keys [id]}]
   {::pathom-connect/input #{:cledgers-fulcro.models.ledger/id}
    ::pathom-connect/output [:cledgers-fulcro.models.ledger/name]}
-  (let [;;result (get ledgers-table id)
-        result (jdbc/execute! (:db-datasource env)
+  (let [result (jdbc/execute! (:db-datasource env)
                               ["select * from ledger where id = ?" id]
                               db/JDBC_QUERY_OPTS)
         #_ (pp/pprint {:ledger-resolver {:result result}})]
@@ -38,11 +37,7 @@
 (pathom-connect/defresolver all-ledgers-resolver [env {:cledgers-fulcro.models.ledger/keys [id]}]
   {::pathom-connect/output [{:all-ledgers [:cledgers-fulcro.models.ledger/id
                                            :cledgers-fulcro.models.ledger/name]}]}
-  (let [#_ (clojure.pprint/pprint {:id-in id})
-        ;; result (mapv
-        ;;           #(hash-map :cledgers-fulcro.models.ledger/id %)
-        ;;           (keys ledgers-table))
-        result (jdbc/execute! (:db-datasource env)
+  (let [result (jdbc/execute! (:db-datasource env)
                               ["select * from ledger"]
                               db/JDBC_QUERY_OPTS)
         #_ (pp/pprint {:all-ledgers-resolver {:result result}})]
@@ -51,8 +46,7 @@
 (pathom-connect/defresolver payee-resolver [env {:cledgers-fulcro.models.payee/keys [id]}]
   {::pathom-connect/input #{:cledgers-fulcro.models.payee/id}
    ::pathom-connect/output [:cledgers-fulcro.models.payee/name]}
-  (let [;; result (get payees-table id)
-        result (jdbc/execute! (:db-datasource env)
+  (let [result (jdbc/execute! (:db-datasource env)
                               ["select * from payee where id = ?" id]
                               db/JDBC_QUERY_OPTS)
         #_ (pp/pprint {:payee-resolver {:result result}})]
@@ -61,11 +55,7 @@
 (pathom-connect/defresolver all-payees-resolver [env {:cledgers-fulcro.models.payee/keys [id]}]
   {::pathom-connect/output [{:all-payees [:cledgers-fulcro.models.payee/id
                                           :cledgers-fulcro.models.payee/name]}]}
-  (let [#_ (println "invoking all-payees-resolver")
-        ;; result (mapv
-        ;;          #(hash-map :cledgers-fulcro.models.payee/id %)
-        ;;          (keys payees-table))
-        result (jdbc/execute! (:db-datasource env)
+  (let [result (jdbc/execute! (:db-datasource env)
                               ["select * from payee"]
                               db/JDBC_QUERY_OPTS)
         #_ (clojure.pprint/pprint result)]
@@ -110,25 +100,22 @@
                             :cledgers-fulcro.models.transaction/ledger
                             :cledgers-fulcro.models.transaction/description
                             :cledgers-fulcro.models.transaction/amount]}
-  (let [;; result (get transactions-table id)
-        result (jdbc/execute! (:db-datasource env)
-                              ["select * from transaction where id = ?" id]
-                              db/JDBC_QUERY_OPTS)
-        result (db-xaction->fulcro-xaction (first result))]
+  (let [result (-> (jdbc/execute! (:db-datasource env)
+                                  ["select * from transaction where id = ?" id]
+                                  db/JDBC_QUERY_OPTS)
+                   first
+                   db-xaction->fulcro-xaction)]
     result))
 
 (pathom-connect/defresolver all-transactions-resolver [env {:cledgers-fulcro.models.transaction/keys [id]}]
   {::pathom-connect/output [{:all-transactions [:cledgers-fulcro.models.transaction/id]}]}
   (let [#_ (println "\ninvoking all-transactions-resolver. result:")
         #_ (pp/pprint {:ds (:db-datasource env)})
-        result (jdbc/execute! (:db-datasource env)
-                              #_db/data-source
-                              ["select * from xaction"]
-                              db/JDBC_QUERY_OPTS)
-        result (map db-xaction->fulcro-xaction result)
-        ;; result (mapv
-        ;;         #(hash-map :cledgers-fulcro.models.transaction/id %)
-        ;;         (keys transactions-table))
+        result (->> (jdbc/execute! (:db-datasource env)
+                               ["select * from xaction"]
+                               db/JDBC_QUERY_OPTS)
+                    (map db-xaction->fulcro-xaction))
+        #_#_result (map db-xaction->fulcro-xaction result)
         #_ (clojure.pprint/pprint {:result result})]
    {:all-transactions result}))
 
