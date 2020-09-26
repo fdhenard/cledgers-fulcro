@@ -4,6 +4,7 @@
         com.fulcrologic/fulcro {:mvn/version "3.3.2"}
         gnl/ghostwheel {:mvn/version "0.3.9"}
         com.cognitect/transit-clj {:mvn/version "1.0.324"}
+        com.cognitect/transit-cljs {:mvn/version "0.8.264"}
         com.wsscode/pathom {:mvn/version "2.2.31"}
         com.taoensso/timbre {:mvn/version "4.10.0"}
         ring/ring-core {:mvn/version "1.8.1"}
@@ -14,11 +15,11 @@
         seancorfield/next.jdbc {:mvn/version "1.1.588"}
         org.postgresql/postgresql {:mvn/version "42.2.16"}
         mount {:mvn/version "0.1.16"}
-        cprop {:mvn/version "0.1.17"}
-        }
+        cprop {:mvn/version "0.1.17"}}
  
  :aliases {:dev {:extra-paths ["src/dev"]
                  :extra-deps {org.clojure/clojurescript {:mvn/version "1.10.758"}
-                              thheller/shadow-cljs {:mvn/version "2.10.21"}
+                              thheller/shadow-cljs {:mvn/version "2.11.4"}
                               binaryage/devtools {:mvn/version "1.0.2"}
-                              org.clojure/tools.namespace {:mvn/version "1.0.0"}}}}}
+                              org.clojure/tools.namespace {:mvn/version "1.0.0"}
+                              cider/cider-nrepl {:mvn/version "0.25.3"}}}}}

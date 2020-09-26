@@ -2,6 +2,7 @@
   (:require [clojure.pprint :as pp]
             [next.jdbc :as jdbc]
             [next.jdbc.result-set]
+            [tick.alpha.api :as tick]
             [com.wsscode.pathom.core :as pathom]
             [com.wsscode.pathom.connect :as pathom-connect]
             [cledgers-fulcro.db.core :as db]))
@@ -81,7 +82,11 @@
     {:answer-plus-one (inc input)}))
 
 (defn db-xaction->fulcro-xaction [db-xaction]
-  (let [date-as-str (str (:cledgers-fulcro.models.transaction/date db-xaction))
+  (let [date-tagged (-> db-xaction
+                        :cledgers-fulcro.models.transaction/date
+                        str
+                        tick/date
+                        pr-str)
         #_ (pp/pprint {:all-transactions-resolver {:date-as-str date-as-str}})]
     (-> db-xaction
         (assoc :cledgers-fulcro.models.transaction/payee
@@ -91,7 +96,7 @@
                {:cledgers-fulcro.models.ledger/id
                 (:cledgers-fulcro.models.transaction/ledger_id db-xaction)})
         (assoc :cledgers-fulcro.models.transaction/date
-               date-as-str))))
+               date-tagged))))
 
 (pathom-connect/defresolver transaction-resolver [env {:cledgers-fulcro.models.transaction/keys [id]}]
   {::pathom-connect/input #{:cledgers-fulcro.models.transaction/id}
@@ -133,10 +138,22 @@
 
 (comment
 
-  (jdbc/execute! db/data-source
-                 ["select * from xaction"]
-                 {:builder-fn next.jdbc.result-set/as-modified-maps
-                  :label-fn identity
-                  :qualifier-fn #(get db/QUALIFIER_MAPPING % %)})
+  (def an-xaction (->>
+                   (jdbc/execute! db/data-source
+                                  ["select * from xaction limit 1"]
+                                  {:builder-fn next.jdbc.result-set/as-modified-maps
+                                   :label-fn identity
+                                   :qualifier-fn #(get db/QUALIFIER_MAPPING % %)})
+                   first))
+
+  an-xaction
+  (def the-date (:cledgers-fulcro.models.transaction/date an-xaction))
+  the-date
+  (require '[tick.alpha.api :as tick])
+  (str the-date)
+  (-> the-date str tick/new-date)
+  (-> the-date str tick/date)
+
+  (println "hi")
 
   )

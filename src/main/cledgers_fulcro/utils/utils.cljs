@@ -7,4 +7,6 @@
    :new-transaction/payee nil
    :new-transaction/ledger nil
    :new-transaction/description ""
-   :new-transaction/amount (math/bigdecimal "")})
+   :new-transaction/amount (math/bigdecimal "")
+   :new-transaction/date nil
+   :new-transaction/date-previous nil})

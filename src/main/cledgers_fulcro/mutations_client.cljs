@@ -7,7 +7,7 @@
 
 
 (defmutation add-transaction
-    [{:keys [id payee description amount ledger] :as mut-in}]
+    [{:keys [id] :as mut-in}]
   (action [{:keys [state] :as action-in}]
     (let [#_ (pp/pprint {:muts-client--add-xaction
                          { ;; :state @state

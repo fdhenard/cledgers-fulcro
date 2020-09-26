@@ -1,6 +1,8 @@
 (ns cledgers-fulcro.ui.core
   (:require [cljs.pprint :as pp]
+            [clojure.edn :as edn]
             [clojure.string :as str]
+            [cognitect.transit :as xsit]
             [com.fulcrologic.fulcro.dom :as dom]
             [com.fulcrologic.fulcro.dom.events :as evt]
             [com.fulcrologic.fulcro.mutations :as muts]
@@ -8,6 +10,10 @@
             [com.fulcrologic.fulcro.components :as comp :refer [defsc]]
             [com.fulcrologic.fulcro.algorithms.react-interop :as interop]
             ["react-number-format" :as NumberFormat]
+            [tick.alpha.api :as tick]
+            [cljc.java-time.month-day :as month-day]
+            [cljc.java-time.year :as year]
+            [cljc.java-time.month :as month]
             [cledgers-fulcro.math :as math]
             [cledgers-fulcro.utils.utils :as utils]
             [cledgers-fulcro.mutations-client :as muts-client]
@@ -47,7 +53,7 @@
    :ident (fn [] [:cledgers-fulcro.models.transaction/id (:cledgers-fulcro.models.transaction/id props)])}
   (let [#_ (pp/pprint {:TransactionListItem {:date date}})]
    (dom/tr {:key id}
-           (dom/td date)
+           (dom/td (-> date edn/read-string str))
            (dom/td (ui-transaction-list-item-payee payee))
            (dom/td (ui-transaction-list-item-ledger ledger))
            (dom/td description)
@@ -59,7 +65,7 @@
 (def ui-number-format (interop/react-factory NumberFormat))
 
 (defsc EditableMoneyInput
-  [this {:keys [value onChange]}]
+  [this {:keys [value on-change]}]
   {:initLocalState (fn [this props] {:editing? false})}
   (let [{:keys [editing?]} (comp/get-state this)
         attrs {:thousandSeparator true
@@ -67,46 +73,86 @@
                :prefix "$"
                :value (math/bigdec->str value)
                :onValueChange (fn [value]
-                                (let [str-value (.-value value)]
-                                  (when onChange
-                                    (onChange (math/bigdecimal str-value)))))}]
+                                (when on-change
+                                  (let [str-value (.-value value)]
+                                    (on-change (math/bigdecimal str-value)))))}]
     (ui-number-format attrs)))
 
 (def ui-editable-money-input (comp/factory EditableMoneyInput))
 
-(defsc NewTransactionRow [this {:new-transaction/keys [id payee description amount ledger] :as props}]
+(defsc LocalDateInput
+  [this {:keys [value on-change]}]
+  (let [#_ (pp/pprint {:LocalDateInput {:value value}})
+        month (-> value tick/month month/get-value)
+        day-of-month (-> value month-day/get-day-of-month)
+        year (-> value tick/year year/get-value)]
+    (dom/span
+     (dom/input {:type :text
+                 :size 2
+                 :value (str month)
+                 :onChange
+                 (fn [evt]
+                   (when on-change
+                     (let [month-int-value (-> evt evt/target-value js/parseInt)
+                           new-date (tick/new-date year month-int-value day-of-month)]
+                      (on-change (pr-str new-date)))))})
+     (dom/span "/")
+     (dom/input {:type :text
+                 :size 2
+                 :value (str day-of-month)
+                 :onChange
+                 (fn [evt]
+                   (when on-change
+                     (let [day-int-value (-> evt evt/target-value js/parseInt)
+                           new-date (tick/new-date year month day-int-value)]
+                       (on-change (pr-str new-date)))))})
+     (dom/span "/")
+     (dom/input {:type :text
+                 :size 4
+                 :value (str year)
+                 :onChange
+                 (fn [evt]
+                   (when on-change
+                     (let [year-int-value (-> evt evt/target-value js/parseInt)
+                           new-date (tick/new-date year-int-value month day-of-month)]
+                       (on-change (pr-str new-date)))))}))))
+
+(def ui-local-date-input (comp/factory LocalDateInput))
+
+
+(defsc NewTransactionRow [this {:new-transaction/keys [id payee description amount ledger
+                                                       date date-previous] :as props}]
   {:query [:new-transaction/id
            :new-transaction/payee
            :new-transaction/ledger
            :new-transaction/description
            :new-transaction/amount
            [:cledgers-fulcro.models.ledger/id '_]
-           [:cledgers-fulcro.models.payee/id '_]]
+           [:cledgers-fulcro.models.payee/id '_]
+           :new-transaction/date
+           :new-transaction/date-previous]
    :ident (fn [] [:new-transaction/id (:new-transaction/id props)])
    :initial-state (fn [params]
                     (utils/new-xaction))}
-  (let [#_ (cljs.pprint/pprint {:props-in-new-trans-row props})
-        ledgers (-> props :cledgers-fulcro.models.ledger/id vals)
+  (let [ledgers (-> props :cledgers-fulcro.models.ledger/id vals)
         payees (-> props :cledgers-fulcro.models.payee/id vals)
-        #_ (cljs.pprint/pprint {:ledgers ledgers
-                               :payees payees})]
+        date (or (edn/read-string date)
+                 (edn/read-string date-previous)
+                 (tick/today))
+        #_ (pp/pprint {:NewTransactionRow {:date date
+                                          ;; :month (tick/month date)
+                                          }})]
    (dom/tr
-    (dom/td (dom/input {:type :text
-                        :size 2
-                        :value "1"})
-            (dom/span "/")
-            (dom/input {:type :text
-                        :size 2
-                        :value "1"})
-            (dom/span "/")
-            (dom/input {:type :text
-                        :size 4
-                        :value "2002"}))
+    (dom/td (ui-local-date-input {:value date
+                                  :on-change
+                                  (fn [value]
+                                    #_(js/console.log "local date input val = " value)
+                                    (muts/set-value! this :new-transaction/date value))}))
     (dom/td (typeahead/ui-typeahead-component
              {:query-func (fn [q-str callback]
                             (let [payee-name-starts-with?
                                   (fn [payee q-str]
-                                    (let [#_ (cljs.pprint/pprint {:payee payee
+                                    (let [#_ (pp/pprint {:payee payee
                                                                  :q-str q-str})
                                           payee-name (:cledgers-fulcro.models.payee/name payee)]
                                       (str/starts-with? payee-name q-str)))
@@ -151,8 +197,47 @@
                                                         :payee payee
                                                         :description description
                                                         :amount amount
-                                                        :ledger ledger})]))}
+                                                        :ledger ledger
+                                                        :date (pr-str date)})]))}
              "add")))))
+
+(comment
+
+  (def today (tick/today))
+
+  today
+  ;; => #time/date "2020-10-02"
+  (.-repr today)
+  ;; => nil
+  (js-keys today)
+
+  (.toString today)
+  ;; => "2020-10-02"
+  (.toJSON today)
+  ;; => "2020-10-02"
+  (.format today)
+  ;; => #object[E NullPointerException: formatter must not be null]
+  (type today)
+  ;; => #object[LocalDate]
+  (def writer (xsit/writer :json))
+  (xsit/write writer today)
+  ;; => #object[Error Error: Cannot write LocalDate]
+
+  (str today)
+  ;; => "2020-10-02"
+
+  (require '[clojure.edn :as edn])
+  (pr-str today)
+  (-> today
+      pr-str
+      edn/read-string
+      type)
+
+
+  )
+
+
+
 
 (def ui-new-transaction-row (comp/factory NewTransactionRow))
 
@@ -163,7 +248,7 @@
    :initial-state
    (fn [this props]
      {:transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
-  (let [#_ (cljs.pprint/pprint {:props-in-trans-list props})]
+  (let [#_ (pp/pprint {:props-in-trans-list props})]
    (dom/div
     (dom/table
      :.table
