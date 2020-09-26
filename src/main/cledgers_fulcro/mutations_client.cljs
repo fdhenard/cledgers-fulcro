@@ -19,7 +19,8 @@
              update-in
              [:component/id :cledgers-fulcro.ui.core/transaction-list :transaction-list/transactions]
              #(conj % new-xaction-key))
-          new-new-xaction (utils/new-xaction)
+          date-previous (:cledgers-fulcro.models.transaction/date mut-in)
+          new-new-xaction (utils/new-xaction date-previous)
           new-new-xaction-id (:new-transaction/id new-new-xaction)
           _ (swap!
              state
