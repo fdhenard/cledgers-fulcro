@@ -34,10 +34,9 @@
                            (dissoc :ledger)
                            (assoc :payee_id payee-id)
                            (assoc :ledger_id ledger-id))
-        #_ (pp/pprint {:mutations {:add-transaction {;; :db-ds (:db-datasource env)
-                                                    :params-renamed params-renamed
-                                                    :date-in (:date params)
-                                                    :date-updated date}}})
+        #_ (pp/pprint {:mutations {:add-transaction
+                                  {:params params
+                                   :params-renamed params-renamed}}})
         insert-res (jdbc-sql/insert! (:db-datasource env)
                                      :xaction
                                      params-renamed)

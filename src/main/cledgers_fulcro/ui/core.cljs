@@ -121,8 +121,9 @@
 (def ui-local-date-input (comp/factory LocalDateInput))
 
 
-(defsc NewTransactionRow [this {:new-transaction/keys [id payee description amount ledger
-                                                       date date-previous] :as props}]
+(defsc NewTransactionRow
+  [this {:new-transaction/keys [id payee description amount ledger
+                                date date-previous] :as props}]
   {:query [:new-transaction/id
            :new-transaction/payee
            :new-transaction/ledger
@@ -140,15 +141,14 @@
         date (or (edn/read-string date)
                  (edn/read-string date-previous)
                  (tick/today))
-        #_ (pp/pprint {:NewTransactionRow {:date date
-                                          ;; :month (tick/month date)
-                                          }})]
+        #_ (pp/pprint {:NewTransactionRow {:props props}})]
    (dom/tr
-    (dom/td (ui-local-date-input {:value date
-                                  :on-change
-                                  (fn [value]
-                                    #_(js/console.log "local date input val = " value)
-                                    (muts/set-value! this :new-transaction/date value))}))
+    (dom/td (ui-local-date-input
+             {:value date
+              :on-change
+              (fn [value]
+                #_ (js/console.log "local date input val = " value)
+                (muts/set-value! this :new-transaction/date value))}))
     (dom/td (typeahead/ui-typeahead-component
              {:query-func (fn [q-str callback]
                             (let [payee-name-starts-with?
@@ -183,11 +183,12 @@
                         :onChange
                         (fn [evt]
                           (muts/set-value! this :new-transaction/description (evt/target-value evt)))}))
-    (dom/td (ui-editable-money-input {:value amount
-                                      :onChange
-                                      (fn [value]
-                                        #_(js/console.log "value = " value)
-                                        (muts/set-value! this :new-transaction/amount value))}))
+    (dom/td (ui-editable-money-input
+             {:value amount
+              :on-change
+              (fn [value]
+                #_ (js/console.log "value = " value)
+                (muts/set-value! this :new-transaction/amount value))}))
     (dom/td (dom/button
              {:onClick
               (fn [evt]
