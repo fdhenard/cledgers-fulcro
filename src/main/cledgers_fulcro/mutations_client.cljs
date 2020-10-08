@@ -4,8 +4,6 @@
             [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
             [cledgers-fulcro.utils.utils :as utils]))
 
-
-
 (defmutation add-transaction
     [{:keys [id] :as mut-in}]
   (action [{:keys [state] :as action-in}]
@@ -17,7 +15,9 @@
           _ (swap!
              state
              update-in
-             [:component/id :cledgers-fulcro.ui.core/transaction-list :transaction-list/transactions]
+             [:component/id
+              :cledgers-fulcro.ui.core/transaction-list
+              :transaction-list/transactions]
              #(conj % new-xaction-key))
           date-previous (:cledgers-fulcro.models.transaction/date mut-in)
           new-new-xaction (utils/new-xaction date-previous)
