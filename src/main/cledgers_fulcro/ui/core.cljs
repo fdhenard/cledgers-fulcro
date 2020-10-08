@@ -38,12 +38,13 @@
 
 (def ui-transaction-list-item-ledger (comp/factory TransactionListItemLedger))
 
-(defsc TransactionListItem [this {:cledgers-fulcro.models.transaction/keys [id
-                                                                            date
-                                                                            payee
-                                                                            ledger
-                                                                            description
-                                                                            amount] :as props}]
+(defsc TransactionListItem
+  [this {:cledgers-fulcro.models.transaction/keys [id
+                                                   date
+                                                   payee
+                                                   ledger
+                                                   description
+                                                   amount] :as props}]
   {:query [:cledgers-fulcro.models.transaction/id
            :cledgers-fulcro.models.transaction/date
            {:cledgers-fulcro.models.transaction/payee (comp/get-query TransactionListItemPayee)}
