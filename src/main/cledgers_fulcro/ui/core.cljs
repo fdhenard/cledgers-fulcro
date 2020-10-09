@@ -47,21 +47,27 @@
                                                    amount] :as props}]
   {:query [:cledgers-fulcro.models.transaction/id
            :cledgers-fulcro.models.transaction/date
-           {:cledgers-fulcro.models.transaction/payee (comp/get-query TransactionListItemPayee)}
-           {:cledgers-fulcro.models.transaction/ledger (comp/get-query TransactionListItemLedger)}
+           {:cledgers-fulcro.models.transaction/payee
+            (comp/get-query TransactionListItemPayee)}
+           {:cledgers-fulcro.models.transaction/ledger
+            (comp/get-query TransactionListItemLedger)}
            :cledgers-fulcro.models.transaction/description
            :cledgers-fulcro.models.transaction/amount]
-   :ident (fn [] [:cledgers-fulcro.models.transaction/id (:cledgers-fulcro.models.transaction/id props)])}
+   :ident (fn [] [:cledgers-fulcro.models.transaction/id
+                  (:cledgers-fulcro.models.transaction/id props)])}
   (let [#_ (pp/pprint {:TransactionListItem {:date date}})]
-   (dom/tr {:key id}
-           (dom/td (-> date edn/read-string str))
-           (dom/td (ui-transaction-list-item-payee payee))
-           (dom/td (ui-transaction-list-item-ledger ledger))
-           (dom/td description)
-           (dom/td (math/bigdec->str amount))
-           (dom/td "something"))))
+    (dom/tr
+     {:key id}
+     (dom/td (-> date edn/read-string str))
+     (dom/td (ui-transaction-list-item-payee payee))
+     (dom/td (ui-transaction-list-item-ledger ledger))
+     (dom/td description)
+     (dom/td (math/bigdec->str amount))
+     (dom/td "something"))))
 
-(def ui-transaction (comp/factory TransactionListItem {:keyfn :cledgers-fulcro.models.transaction/id}))
+(def ui-transaction (comp/factory
+                     TransactionListItem
+                     {:keyfn :cledgers-fulcro.models.transaction/id}))
 
 (def ui-number-format (interop/react-factory NumberFormat))
 
@@ -69,14 +75,16 @@
   [this {:keys [value on-change]}]
   {:initLocalState (fn [this props] {:editing? false})}
   (let [{:keys [editing?]} (comp/get-state this)
-        attrs {:thousandSeparator true
-               :decimalScale 2
-               :prefix "$"
-               :value (math/bigdec->str value)
-               :onValueChange (fn [value]
-                                (when on-change
-                                  (let [str-value (.-value value)]
-                                    (on-change (math/bigdecimal str-value)))))}]
+        attrs
+        {:thousandSeparator true
+         :decimalScale 2
+         :prefix "$"
+         :value (math/bigdec->str value)
+         :onValueChange
+         (fn [value]
+           (when on-change
+             (let [str-value (.-value value)]
+               (on-change (math/bigdecimal str-value)))))}]
     (ui-number-format attrs)))
 
 (def ui-editable-money-input (comp/factory EditableMoneyInput))
@@ -94,9 +102,14 @@
                  :onChange
                  (fn [evt]
                    (when on-change
-                     (let [month-int-value (-> evt evt/target-value js/parseInt)
-                           new-date (tick/new-date year month-int-value day-of-month)]
-                      (on-change (pr-str new-date)))))})
+                     (let [month-int-value (-> evt
+                                               evt/target-value
+                                               js/parseInt)
+                           new-date (tick/new-date
+                                     year
+                                     month-int-value
+                                     day-of-month)]
+                       (on-change (pr-str new-date)))))})
      (dom/span "/")
      (dom/input {:type :text
                  :size 2
@@ -115,7 +128,10 @@
                  (fn [evt]
                    (when on-change
                      (let [year-int-value (-> evt evt/target-value js/parseInt)
-                           new-date (tick/new-date year-int-value month day-of-month)]
+                           new-date (tick/new-date
+                                     year-int-value
+                                     month
+                                     day-of-month)]
                        (on-change (pr-str new-date)))))}))))
 
 (def ui-local-date-input (comp/factory LocalDateInput))
@@ -142,66 +158,85 @@
                  (edn/read-string date-previous)
                  (tick/today))
         #_ (pp/pprint {:NewTransactionRow {:props props}})]
-   (dom/tr
-    (dom/td (ui-local-date-input
-             {:value date
-              :on-change
-              (fn [value]
-                #_ (js/console.log "local date input val = " value)
-                (muts/set-value! this :new-transaction/date value))}))
-    (dom/td (typeahead/ui-typeahead-component
-             {:query-func (fn [q-str callback]
-                            (let [payee-name-starts-with?
-                                  (fn [payee q-str]
-                                    (let [#_ (pp/pprint {:payee payee
-                                                                 :q-str q-str})
-                                          payee-name (:cledgers-fulcro.models.payee/name payee)]
-                                      (str/starts-with? payee-name q-str)))
-                                  matches (filter #(payee-name-starts-with? % q-str) payees)]
-                              (callback matches)))
-              :item->text :cledgers-fulcro.models.payee/name
-              :item->id :cledgers-fulcro.models.payee/id
-              :onChange (fn [value]
-                          (let [pathom-val [:cledgers-fulcro.models.payee/id (:id value)]]
-                           (muts/set-value! this :new-transaction/payee pathom-val)))}))
-    (dom/td (typeahead/ui-typeahead-component
-             {:query-func (fn [q-str callback]
-                            (let [ledger-name-starts-with?
-                                  (fn [ledger q-str]
-                                    (let [ledger-name (:cledgers-fulcro.models.ledger/name ledger)]
-                                      (str/starts-with? ledger-name q-str)))
-                                  matches (filter #(ledger-name-starts-with? % q-str) ledgers)]
-                              (callback matches)))
-              :item->text :cledgers-fulcro.models.ledger/name
-              :item->id :cledgers-fulcro.models.ledger/id
-              :onChange (fn [value]
-                          (let [#_ (pp/pprint {:ledger-on-change-value value})
-                                pathom-val [:cledgers-fulcro.models.ledger/id (:id value)]
-                                _ (muts/set-value! this :new-transaction/ledger pathom-val)]))}))
-    (dom/td (dom/input {:type :text
-                        :value description
-                        :onChange
-                        (fn [evt]
-                          (muts/set-value! this :new-transaction/description (evt/target-value evt)))}))
-    (dom/td (ui-editable-money-input
-             {:value amount
-              :on-change
-              (fn [value]
-                #_ (js/console.log "value = " value)
-                (muts/set-value! this :new-transaction/amount value))}))
-    (dom/td (dom/button
-             {:onClick
-              (fn [evt]
-                (comp/transact!
-                 this
-                 [(muts-client/add-transaction
-                   #:cledgers-fulcro.models.transaction{:id id
-                                                        :payee payee
-                                                        :description description
-                                                        :amount amount
-                                                        :ledger ledger
-                                                        :date (pr-str date)})]))}
-             "add")))))
+    (dom/tr
+     (dom/td (ui-local-date-input
+              {:value date
+               :on-change
+               (fn [value]
+                 #_ (js/console.log "local date input val = " value)
+                 (muts/set-value! this :new-transaction/date value))}))
+     (dom/td
+      (typeahead/ui-typeahead-component
+       {:query-func
+        (fn [q-str callback]
+          (let [payee-name-starts-with?
+                (fn [payee q-str]
+                  (let [#_ (pp/pprint {:payee payee
+                                       :q-str q-str})
+                        payee-name (:cledgers-fulcro.models.payee/name payee)]
+                    (str/starts-with? payee-name q-str)))
+                matches (filter #(payee-name-starts-with? % q-str) payees)]
+            (callback matches)))
+        :item->text :cledgers-fulcro.models.payee/name
+        :item->id :cledgers-fulcro.models.payee/id
+        :onChange
+        (fn [value]
+          (let [pathom-val [:cledgers-fulcro.models.payee/id (:id value)]]
+            (muts/set-value! this :new-transaction/payee pathom-val)))}))
+     (dom/td (typeahead/ui-typeahead-component
+              {:query-func
+               (fn [q-str callback]
+                 (let [ledger-name-starts-with?
+                       (fn [ledger q-str]
+                         (let [ledger-name
+                               (:cledgers-fulcro.models.ledger/name ledger)]
+                           (str/starts-with? ledger-name q-str)))
+                       matches (filter
+                                #(ledger-name-starts-with? % q-str)
+                                ledgers)]
+                   (callback matches)))
+               :item->text :cledgers-fulcro.models.ledger/name
+               :item->id :cledgers-fulcro.models.ledger/id
+               :onChange
+               (fn [value]
+                 (let [_ (pp/pprint {:ledger-on-change-value value})
+                       pathom-val
+                       [:cledgers-fulcro.models.ledger/id (:id value)]
+                       _ (muts/set-value!
+                          this
+                          :new-transaction/ledger
+                          pathom-val)]))}))
+     (dom/td
+      (dom/input
+       {:type :text
+        :value description
+        :onChange
+        (fn [evt]
+          (muts/set-value!
+           this
+           :new-transaction/description
+           (evt/target-value evt)))}))
+     (dom/td
+      (ui-editable-money-input
+       {:value amount
+        :on-change
+        (fn [value]
+          #_ (js/console.log "value = " value)
+          (muts/set-value! this :new-transaction/amount value))}))
+     (dom/td
+      (dom/button
+       {:onClick
+        (fn [evt]
+          (comp/transact!
+           this
+           [(muts-client/add-transaction
+             #:cledgers-fulcro.models.transaction{:id id
+                                                  :payee payee
+                                                  :description description
+                                                  :amount amount
+                                                  :ledger ledger
+                                                  :date (pr-str date)})]))}
+       "add")))))
 
 (comment
 
@@ -243,35 +278,42 @@
 
 (def ui-new-transaction-row (comp/factory NewTransactionRow))
 
-(defsc TransactionList [this {:transaction-list/keys [transactions new-transaction] :as props}]
-  {:query [{:transaction-list/new-transaction (comp/get-query NewTransactionRow)}
-           {:transaction-list/transactions (comp/get-query TransactionListItem)}]
+(defsc TransactionList [this {:transaction-list/keys [transactions
+                                                      new-transaction]
+                              :as props}]
+  {:query [{:transaction-list/new-transaction
+            (comp/get-query NewTransactionRow)}
+           {:transaction-list/transactions
+            (comp/get-query TransactionListItem)}]
    :ident (fn [this props] [:component/id ::transaction-list])
    :initial-state
    (fn [this props]
-     {:transaction-list/new-transaction (comp/get-initial-state NewTransactionRow)})}
+     {:transaction-list/new-transaction
+      (comp/get-initial-state NewTransactionRow)})}
   (let [#_ (pp/pprint {:props-in-trans-list props})]
-   (dom/div
-    (dom/table
-     :.table
-     (dom/thead
-      (dom/tr
-       (dom/th "date")
-       (dom/th "payee")
-       (dom/th "ledger")
-       (dom/th "desc")
-       (dom/th "amount")
-       (dom/th "controls")))
-     (dom/tbody
-      (ui-new-transaction-row new-transaction)
-      (map ui-transaction transactions))))))
+    (dom/div
+     (dom/table
+      :.table
+      (dom/thead
+       (dom/tr
+        (dom/th "date")
+        (dom/th "payee")
+        (dom/th "ledger")
+        (dom/th "desc")
+        (dom/th "amount")
+        (dom/th "controls")))
+      (dom/tbody
+       (ui-new-transaction-row new-transaction)
+       (map ui-transaction transactions))))))
 
 (def ui-transaction-list (comp/factory TransactionList))
 
 (defsc Root
   [this {:root/keys [transaction-list]}]
   {:query [{:root/transaction-list (comp/get-query TransactionList)}]
-   :initial-state (fn [this] {:root/transaction-list (comp/get-initial-state TransactionList)})
-   }
+   :initial-state
+   (fn [this]
+     {:root/transaction-list
+      (comp/get-initial-state TransactionList)})}
   (dom/div
    (ui-transaction-list transaction-list)))
